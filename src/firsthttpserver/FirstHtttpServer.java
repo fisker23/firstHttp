@@ -28,6 +28,7 @@ public class FirstHtttpServer {
     HttpServer server = HttpServer.create(new InetSocketAddress(ip,port), 0);
     server.createContext("/welcome", new RequestHandler());
     server.createContext("/files", new SimpleFileHandler());
+    server.createContext("/headers", new RequestHandlerHeader());
     server.setExecutor(null); // Use the default executor
     server.start();
     System.out.println("Server started, listening on port: "+port);
@@ -55,7 +56,7 @@ response = sb.toString();
           response += " <br> " +scan.nextLine();
       }
       Headers h = he.getResponseHeaders();
-h.add("Content-Type", "text/html");
+        h.add("Content-Type", "text/html");
 
       he.sendResponseHeaders(200, response.length());
       try (PrintWriter pw = new PrintWriter(he.getResponseBody())) {
@@ -63,7 +64,52 @@ h.add("Content-Type", "text/html");
       }
     }
   }
-  static class SimpleFileHandler implements HttpHandler {
+
+    static class RequestHandlerHeader implements HttpHandler {
+    @Override
+    public void handle(HttpExchange he) throws IOException {
+      String response = "";
+            StringBuilder sb = new StringBuilder();
+            he.getRequestHeaders();
+            
+
+            sb.append("<!DOCTYPE html>\n");
+sb.append("<html>\n");
+sb.append("<head>\n");
+sb.append("<meta charset='UTF-8'>\n");
+sb.append("</head>");
+sb.append("<body>");
+sb.append("Opgave2\n");
+sb.append("<table border=4px>\n");
+sb.append("<tr><th> Header </th> <th>Value  </th></tr>\n");
+        for (String s : he.getRequestHeaders().keySet()){
+            {
+                sb.append("<tr>\n");
+                sb.append("<td>" + s + "</td>\n" );
+                sb.append("<td>" + he.getRequestHeaders().getFirst(s) + "</td>");
+                sb.append("</tr>");
+            }
+            
+        }
+sb.append("</table>");
+sb.append("</body>");
+sb.append("</html>");
+response = sb.toString();
+      Scanner scan = new Scanner(he.getRequestBody());
+      while(scan.hasNext()){
+          response += " <br> " +scan.nextLine();
+      }
+      Headers h = he.getResponseHeaders();
+        h.add("Content-Type", "text/html");
+
+      he.sendResponseHeaders(200, response.length());
+      try (PrintWriter pw = new PrintWriter(he.getResponseBody())) {
+        pw.print(response); //What happens if we use a println instead of print --> Explain
+      }
+    }
+  }
+  
+    static class SimpleFileHandler implements HttpHandler {
     @Override
     public void handle(HttpExchange he) throws IOException {
       File file = new File(contentFolder + "index.html");
