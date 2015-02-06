@@ -29,7 +29,8 @@ public class FirstHtttpServer {
     server.createContext("/welcome", new RequestHandler());
     server.createContext("/files", new SimpleFileHandler());
     server.createContext("/headers", new RequestHandlerHeader());
-    server.createContext("/pages/", new FileHandlerO3());
+    server.createContext("/pages", new FileHandlerO3());
+    server.createContext("/parameters", new RequestHandlerO4());
     server.setExecutor(null); // Use the default executor
     server.start();
     System.out.println("Server started, listening on port: "+port);
@@ -109,6 +110,44 @@ response = sb.toString();
       }
     }
   }
+    static class RequestHandlerO4 implements HttpHandler {
+    @Override
+    public void handle(HttpExchange he) throws IOException {
+      String response = "";
+            StringBuilder sb = new StringBuilder();
+            he.getRequestHeaders();
+            
+
+            sb.append("<!DOCTYPE html>\n");
+sb.append("<html>\n");
+sb.append("<head>\n");
+sb.append("<meta charset='UTF-8'>\n");
+sb.append("</head>");
+sb.append("<body>");
+String temp = he.getRequestURI().getQuery();
+sb.append("<h1>Method is: "+ he.getRequestMethod() + "</h1>\n");
+if(temp != null){
+sb.append("Get-Parameters : " + temp);
+}
+sb.append("</body>");
+sb.append("</html>");
+
+     Scanner scan = new Scanner(he.getRequestBody());
+ while(scan.hasNext()){
+ sb.append("Request body, with Post-parameters: "+scan.nextLine());
+ sb.append("</br>");
+ }
+response = sb.toString();
+      
+      Headers h = he.getResponseHeaders();
+        h.add("Content-Type", "text/html");
+
+      he.sendResponseHeaders(200, response.length());
+      try (PrintWriter pw = new PrintWriter(he.getResponseBody())) {
+        pw.print(response); //What happens if we use a println instead of print --> Explain
+      }
+    }
+  }
 
     
     static class SimpleFileHandler implements HttpHandler {
@@ -145,5 +184,6 @@ response = sb.toString();
       }
     }
   }
+
 }
 
