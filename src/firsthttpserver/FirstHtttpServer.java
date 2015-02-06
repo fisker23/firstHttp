@@ -29,6 +29,7 @@ public class FirstHtttpServer {
     server.createContext("/welcome", new RequestHandler());
     server.createContext("/files", new SimpleFileHandler());
     server.createContext("/headers", new RequestHandlerHeader());
+    server.createContext("/pages/", new FileHandlerO3());
     server.setExecutor(null); // Use the default executor
     server.start();
     System.out.println("Server started, listening on port: "+port);
@@ -108,7 +109,8 @@ response = sb.toString();
       }
     }
   }
-  
+
+    
     static class SimpleFileHandler implements HttpHandler {
     @Override
     public void handle(HttpExchange he) throws IOException {
@@ -126,4 +128,22 @@ response = sb.toString();
       }
     }
   }
+     static class FileHandlerO3 implements HttpHandler {
+    @Override
+    public void handle(HttpExchange he) throws IOException {
+      File file = new File(contentFolder + "index.html");
+      byte[] bytesToSend = new byte[(int) file.length()];
+      try {
+        BufferedInputStream bis = new BufferedInputStream(new FileInputStream(file));
+        bis.read(bytesToSend, 0, bytesToSend.length);
+      } catch (IOException ie) {
+        System.out.println(ie);
+      }
+      he.sendResponseHeaders(200, bytesToSend.length);
+      try (OutputStream os = he.getResponseBody()) {
+        os.write(bytesToSend, 0, bytesToSend.length);
+      }
+    }
+  }
 }
+
